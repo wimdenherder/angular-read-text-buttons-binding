@@ -71,7 +71,13 @@
 	</div>
 </div>
 
-<span *ngFor="let word of getSplittedText(); index as i">
+Sentences:<br>
+<span *ngFor="let sentence of getSentences(); index as i">
+  <button (click)="speakWord(sentence)">{{sentence}}</button>
+</span>
+<br>
+<br>Words:<br>
+<span *ngFor="let word of getWords(); index as i">
   <button (click)="speakWord(word)">{{word}}</button>
 </span>
 

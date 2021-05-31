@@ -89,8 +89,12 @@ export class AppComponent {
 
 	}
 
-  public getSplittedText() {
+  public getSentences() {
     return this.text.split(/\.\s*/).filter(x => x.length > 0)
+  }
+
+  public getWords() {
+    return this.text.split(/\s+/).filter(x => x.length > 0)
   }
 
 	// I synthesize speech from the current text for the currently-selected voice.
