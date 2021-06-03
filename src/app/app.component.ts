@@ -1,179 +1,167 @@
+import { SpeechService } from './speech.service';
 // Import the core angular services.
-import { Component } from "@angular/core";
+import { Component, Inject } from '@angular/core';
+import {
+  MatDialog,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
+import { TranslateService } from './translate.service';
+import { forkJoin, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 // ----------------------------------------------------------------------------------- //
 // ----------------------------------------------------------------------------------- //
 
 interface RecommendedVoices {
-	[key: string]: boolean;
+  [key: string]: boolean;
+}
+
+interface TranslationAndOriginal {
+  word: string;
+  translatedWord: string;
+}
+
+export interface DialogData {
+  word: string;
+  translatedWord: string;
 }
 
 @Component({
-	selector: "app-root",
-	styleUrls: [ "./app.component.less" ],
-	templateUrl: "./app.component.html"
+  selector: 'app-root',
+  styleUrls: ['./app.component.less'],
+  templateUrl: './app.component.html',
 })
 export class AppComponent {
+  public recommendedVoices: RecommendedVoices;
+  public rates: number[];
+  public selectedRate: number;
+  public selectedVoice: SpeechSynthesisVoice | null;
+  public text: string;
+  public voices: SpeechSynthesisVoice[];
 
-	public sayCommand: string;
-	public recommendedVoices: RecommendedVoices;
-	public rates: number[];
-	public selectedRate: number;
-	public selectedVoice: SpeechSynthesisVoice | null;
-	public text: string;
-	public voices: SpeechSynthesisVoice[];
+  // I initialize the app component.
+  constructor(
+    public dialog: MatDialog,
+    public translateService: TranslateService,
+    public speechService: SpeechService
+  ) {
+    this.voices = [];
+    this.rates = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+    this.selectedVoice = null;
+    this.selectedRate = 1;
+    // Dirty Dancing for the win!
+    this.text =
+      `This is our hope. This is the faith that I go back to the South with. With this faith, we will be able to hew out of the mountain of despair a stone of hope. With this faith we will be able to transform the jangling discords of our nation into a beautiful symphony of brotherhood. With this faith we will be able to work together, to pray together, to struggle together, to go to jail together, to stand up for freedom together, knowing that we will be free one day.`;
 
-	// I initialize the app component.
-	constructor() {
-
-		this.voices = [];
-		this.rates = [ .25, .5, .75, 1, 1.25, 1.5, 1.75, 2 ];
-		this.selectedVoice = null;
-		this.selectedRate = 1;
-		// Dirty Dancing for the win!
-		this.text = "Me? ... I'm scared of everything. I'm scared of what I saw, of what I did, of who I am. And most of all, I'm scared of walking out of this room and never feeling the rest of my whole life ... the way I feel when I'm with you.";
-		this.sayCommand = "";
-
-		// These are "recommended" in so much as that these are the voices that I (Ben)
-		// could understand most clearly.
-		this.recommendedVoices = Object.create( null );
-		this.recommendedVoices[ "Alex" ] = true;
-		this.recommendedVoices[ "Alva" ] = true;
-		this.recommendedVoices[ "Damayanti" ] = true;
-		this.recommendedVoices[ "Daniel" ] = true;
-		this.recommendedVoices[ "Fiona" ] = true;
-		this.recommendedVoices[ "Fred" ] = true;
-		this.recommendedVoices[ "Karen" ] = true;
-		this.recommendedVoices[ "Mei-Jia" ] = true;
-		this.recommendedVoices[ "Melina" ] = true;
-		this.recommendedVoices[ "Moira" ] = true;
-		this.recommendedVoices[ "Rishi" ] = true;
-		this.recommendedVoices[ "Samantha" ] = true;
-		this.recommendedVoices[ "Tessa" ] = true;
-		this.recommendedVoices[ "Veena" ] = true;
-		this.recommendedVoices[ "Victoria" ] = true;
-		this.recommendedVoices[ "Yuri" ] = true;
-
-	}
-
-	// ---
-	// PUBLIC METHODS.
-	// ---
+    this.recommendedVoices = this.speechService.recommendedVoices;
+    this.selectedVoice = this.voices[0];
+  }
 
 
+  public ngOnInit(): void {
+    speechSynthesis.addEventListener('voiceschanged', () => {
+      this.voices = speechSynthesis.getVoices();
+      console.log(this.voices);
+      this.selectedVoice = this.voices.find(voice => voice.lang === "ru-RU") || null;
+    });
+  }
 
-	// I get called once after the inputs have been bound for the first time.
-	public ngOnInit() : void {
+  // I synthesize speech from the current text for the currently-selected voice.
+  public speak(): void {
+    if (!this.selectedVoice || !this.text)
+      return;
 
-		this.voices = speechSynthesis.getVoices();
-		this.selectedVoice = ( this.voices[ 0 ] || null );
-		this.updateSayCommand();
-
-		// The voices aren't immediately available (or so it seems). As such, if no
-		// voices came back, let's assume they haven't loaded yet and we need to wait for
-		// the "voiceschanged" event to fire before we can access them.
-		if ( ! this.voices.length ) {
-
-			speechSynthesis.addEventListener(
-				"voiceschanged",
-				() => {
-
-					this.voices = speechSynthesis.getVoices();
-					this.selectedVoice = ( this.voices[ 0 ] || null );
-					this.updateSayCommand();
-
-				}
-			);
-
-		}
-
-	}
+    this.speechService.stop();
+    this.speechService.speak(
+      this.text,
+      this.selectedRate,
+      this.selectedVoice.name
+    );
+  }
 
   public getSentences() {
-    return this.text.split(/\.\s*/).filter(x => x.length > 0)
+    return this.text.split(/\. +/).filter((x) => x.length > 0);
   }
 
   public getWords() {
-    return this.text.split(/\s+/).filter(x => x.length > 0)
+    return this.text.split(/\s+/).filter((x) => x.length > 0);
   }
 
-	// I synthesize speech from the current text for the currently-selected voice.
-	public speak() : void {
-    console.log('speak')
-		if ( ! this.selectedVoice || ! this.text ) {
+  public openTranslationDialog(word: string): void {
+    if (!this.selectedVoice || !this.text) {
+      return;
+    }
+    const $translation = this.translateService.translate({
+      q: word,
+      source: 'nl',
+      target: 'ru'
+    });
 
-			return;
 
-		}
+    $translation.subscribe((translation: any) => {
+      this.speechService.speak(translation, this.selectedRate, this.selectedVoice?.name);
+      const dialogRef = this.dialog.open(DialogOverviewExampleDialog, {
+        data: {
+          word,
+          translatedWord: translation
+        },
+      });
+    });
+  }
+}
 
-		this.stop();
-		this.synthesizeSpeechFromText( this.selectedVoice, this.selectedRate, this.text );
+@Component({
+  selector: 'translation-popup',
+  templateUrl: 'translation-popup.html',
+})
+export class DialogOverviewExampleDialog {
+  words: string[] = [];
+  sentences: string[] = [];
+  translatedWords: string[] = [];
+  hasSentence: boolean = false;
+  constructor(
+    public dialogRef: MatDialogRef<DialogOverviewExampleDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    public speechService: SpeechService,
+    public translateService: TranslateService
+  ) {}
 
-	}
-
-  public speakWord(word: string): void {
-    console.log('speakWord')
-    if ( ! this.selectedVoice || ! this.text ) {
-
-			return;
-
-		}
-    this.synthesizeSpeechFromText( this.selectedVoice, this.selectedRate, word );
+  ngOnInit() {
+    this.words = this.getWords();
+    this.sentences = this.getSentences();
+    this.hasSentence = this.words.length > 1;
   }
 
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
 
-	// I stop any current speech synthesis.
-	public stop() : void {
+  getWords() {
+    return this.data.translatedWord.split(" ");
+  }
 
-		if ( speechSynthesis.speaking ) {
+  getSentences() {
+    return this.data.translatedWord.split(/\.\s+/).filter((x) => x.length > 0);
+  }
 
-			speechSynthesis.cancel();
+  speak(word: string, word2?: string) {
+    this.speechService.speak(word, 1, 'Google русский');
+  }
 
-		}
-
-	}
-
-
-	// I update the "say" command that can be used to generate the a sound file from the
-	// current speech synthesis configuration.
-	public updateSayCommand() : void {
-
-		if ( ! this.selectedVoice || ! this.text ) {
-
-			return;
-
-		}
-
-		// With the say command, the rate is the number of words-per-minute. As such, we
-		// have to finagle the SpeechSynthesis rate into something roughly equivalent for
-		// the terminal-based invocation.
-		var sanitizedRate = Math.floor( 200 * this.selectedRate );
-		var sanitizedText = this.text
-			.replace( /[\r\n]/g, " " )
-			.replace( /(["'\\\\/])/g, "\\$1" )
-		;
-
-		this.sayCommand = `say --voice ${ this.selectedVoice.name } --rate ${ sanitizedRate } --output-file=demo.aiff "${ sanitizedText }"`;
-
-	}
-
-	// ---
-	// PRIVATE METHODS.
-	// ---
-
-	// I perform the low-level speech synthesis for the given voice, rate, and text.
-	private synthesizeSpeechFromText(
-		voice: SpeechSynthesisVoice,
-		rate: number,
-		text: string
-		) : void {
-
-		var utterance = new SpeechSynthesisUtterance( text );
-		utterance.voice = this.selectedVoice;
-		utterance.rate = rate;
-
-		speechSynthesis.speak( utterance );
-
-	}
-
+  translateWord = forkJoin(
+    this.getWords().map((word:string) =>{
+      const options = {q: word, source: 'ru', target: 'en'};
+      return this.translateService.translate(options).pipe(
+        map(
+          (translatedText:string): TranslationAndOriginal => (
+              {
+                word,
+                translatedWord: translatedText
+              }
+            )
+          )
+      )}
+    )
+  )
 }

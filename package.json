@@ -12,13 +12,17 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "~11.1.2",
+    "@angular/cdk": "^12.0.2",
     "@angular/common": "~11.1.2",
     "@angular/compiler": "~11.1.2",
     "@angular/core": "~11.1.2",
     "@angular/forms": "~11.1.2",
+    "@angular/material": "^11.2.3",
     "@angular/platform-browser": "~11.1.2",
     "@angular/platform-browser-dynamic": "~11.1.2",
     "@angular/router": "~11.1.2",
+    "@google-cloud/translate": "^6.2.1",
+    "google-auth-library": "^7.1.1",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.11.3"

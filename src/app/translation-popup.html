@@ -1,0 +1,15 @@
+<h1 mat-dialog-title>Hi {{data.word}}</h1>
+<div mat-dialog-content>
+  <p>Translation</p>
+  <p *ngIf="hasSentence">
+    <span *ngFor="let sentence of getSentences(); index as i">
+      <button (click)="speak(sentence)">{{sentence}}</button>
+    </span>
+  </p>
+  <p>
+    <span *ngFor="let word of translateWord|async; index as i">
+      <button (click)="speak(word.word)"
+      [matTooltip]="word.translatedWord">{{word.word}}</button>
+    </span><br><br>
+  </p>
+</div>
