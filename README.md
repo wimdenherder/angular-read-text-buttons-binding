@@ -1,5 +1,6 @@
 # Text to Speech
 Creates buttons based on input text, for each sentence and word!
+It translates it to Russian and plays it with text to speech!
 
 <img src="src/assets/screenshot.png">
 <img src="src/assets/screenshot2.png">
