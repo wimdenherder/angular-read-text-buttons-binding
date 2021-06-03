@@ -6,5 +6,6 @@ Creates buttons based on input text, for each sentence and word!
 
 # Installation
 1. clone the repo/download
-2. npm install
-3. npm start
+2. replace apikey for translation with yours (get it at console.cloud.google.com)
+3. npm install
+4. npm start
