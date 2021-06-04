@@ -1,3 +1,12 @@
+<!-- <div class="form-field">
+  <label for="voice-control" class="form-field__label">
+		Speak now:
+	</label>
+  <div class="form-field__content">
+  <input [formControl]="queryField" type="text" id="keyword" placeholder="Type English, hear russian" size="50" autofocus/>
+</div>
+</div> -->
+
 <div class="form-field">
 	<label for="voice-control" class="form-field__label">
 		Voice:
@@ -55,6 +64,7 @@
 	</label>
 	<div class="form-field__content">
 		<textarea
+    [formControl]="queryField"
 			id="text-control"
 			name="text"
 			[(ngModel)]="text"
@@ -67,6 +77,28 @@
 		</div>
 	</div>
 </div>
+
+<div class="form-field">
+	<label for="text-control" class="form-field__label">
+		Extra:
+	</label>
+	<div class="form-field__content">
+		<div>
+      <input type="checkbox" id="giphy" name="giphy"
+             checked [(ngModel)]="showGiphy"
+             [ngModelOptions]="{standalone: true}">
+      <label for="scales">Giphy</label>
+    </div>
+    <div>
+      <input type="checkbox" id="youglish" name="youglish"
+             checked [(ngModel)]="showYouglish"
+             [ngModelOptions]="{standalone: true}">
+      <label for="scales">Youglish</label>
+    </div>
+	</div>
+</div>
+
+
 
 <br>Words:<br>
 <span *ngFor="let word of getWords(); index as i">

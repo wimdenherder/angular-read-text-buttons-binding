@@ -1,4 +1,4 @@
-import { SpeechService } from './speech.service';
+import { SpeechService } from '../services/speech.service';
 // Import the core angular services.
 import { Component, Inject } from '@angular/core';
 import {
@@ -6,9 +6,11 @@ import {
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { TranslateService } from './translate.service';
-import { forkJoin, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { TranslateService } from '../services/translate.service';
+import { GiphyService } from 'src/services/giphy.service';
+import { forkJoin } from 'rxjs';
+import { debounceTime, distinctUntilChanged, distinctUntilKeyChanged, map, switchMap } from 'rxjs/operators';
+import { FormControl } from '@angular/forms';
 
 // ----------------------------------------------------------------------------------- //
 // ----------------------------------------------------------------------------------- //
@@ -17,14 +19,11 @@ interface RecommendedVoices {
   [key: string]: boolean;
 }
 
-interface TranslationAndOriginal {
-  word: string;
-  translatedWord: string;
-}
-
 export interface DialogData {
   word: string;
   translatedWord: string;
+  showYouglish: boolean;
+  showGiphy: boolean;
 }
 
 @Component({
@@ -39,6 +38,9 @@ export class AppComponent {
   public selectedVoice: SpeechSynthesisVoice | null;
   public text: string;
   public voices: SpeechSynthesisVoice[];
+  public showYouglish: boolean = false;
+  public showGiphy: boolean = false;
+  public queryField: FormControl = new FormControl();
 
   // I initialize the app component.
   constructor(
@@ -65,6 +67,12 @@ export class AppComponent {
       console.log(this.voices);
       this.selectedVoice = this.voices.find(voice => voice.lang === "ru-RU") || null;
     });
+
+    this.queryField.valueChanges.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap(x=>this.translateService.translate({q: x, source: 'en', target: 'ru'}))
+    ).subscribe(response => this.speechService.speak(response, 1, 'Google русский'));
   }
 
   // I synthesize speech from the current text for the currently-selected voice.
@@ -101,40 +109,54 @@ export class AppComponent {
 
     $translation.subscribe((translation: any) => {
       this.speechService.speak(translation, this.selectedRate, this.selectedVoice?.name);
-      const dialogRef = this.dialog.open(DialogOverviewExampleDialog, {
+      const dialogRef = this.dialog.open(TranslationPopup, {
         data: {
           word,
-          translatedWord: translation
+          translatedWord: translation,
+          showYouglish: this.showYouglish,
+          showGiphy: this.showGiphy
         },
       });
     });
   }
 }
 
+
+
+interface TranslationAndOriginal {
+  word: string;
+  translatedWord: string;
+}
+
 @Component({
   selector: 'translation-popup',
-  templateUrl: 'translation-popup.html',
+  templateUrl: 'translation-popup/translation-popup.html',
+  styleUrls: ['translation-popup/translation-popup.less']
 })
-export class DialogOverviewExampleDialog {
+export class TranslationPopup {
   words: string[] = [];
   sentences: string[] = [];
   translatedWords: string[] = [];
   hasSentence: boolean = false;
+  gif: any;
   constructor(
-    public dialogRef: MatDialogRef<DialogOverviewExampleDialog>,
+    public translationPopupRef: MatDialogRef<TranslationPopup>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     public speechService: SpeechService,
-    public translateService: TranslateService
+    public translateService: TranslateService,
+    public giphyService: GiphyService
   ) {}
 
   ngOnInit() {
     this.words = this.getWords();
     this.sentences = this.getSentences();
     this.hasSentence = this.words.length > 1;
+    this.gif = this.giphyService.getGif(this.data.translatedWord).toPromise();
+
   }
 
   onNoClick(): void {
-    this.dialogRef.close();
+    this.translationPopupRef.close();
   }
 
   getWords() {

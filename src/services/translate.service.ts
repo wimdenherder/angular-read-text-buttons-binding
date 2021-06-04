@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { map, take, share } from 'rxjs/operators';
 
 const url = 'https://translation.googleapis.com/language/translate/v2?key=';
-import { key } from '/credentials/apiKeyTranslateWimcoding'; // replace this with your API Key
+import { key as translateKey } from '/credentials/apiKeyTranslateWimcoding'; // replace this with your API Key
 
 export class GoogleObj {
   q: string = '';
@@ -20,7 +20,7 @@ export class TranslateService {
   constructor(private _http: HttpClient) {}
 
   translate(obj: GoogleObj) {
-    return this._http.post(url + key, obj).pipe(
+    return this._http.post(url + translateKey, obj).pipe(
       map((d: any) => d.data.translations[0].translatedText)
     )
   }
