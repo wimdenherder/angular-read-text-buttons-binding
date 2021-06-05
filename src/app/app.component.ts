@@ -19,15 +19,6 @@ interface RecommendedVoices {
   [key: string]: boolean;
 }
 
-export interface DialogData {
-  word: string;
-  translatedWord: string;
-  showYouglish: boolean;
-  showGiphy: boolean;
-  source: string;
-  target: string;
-}
-
 @Component({
   selector: 'app-root',
   styleUrls: ['./app.component.less'],
@@ -87,12 +78,13 @@ export class AppComponent {
     });
   }
 
-  public getNameLang(langCode: string) {
+  public getNameLang(langCode: string | undefined) {
+    if(!langCode) return langCode;
     const lib: any = {
       'nl': 'Dutch',
       'en': 'English',
       "it": 'Italian',
-      "sv": 'Sv',
+      "sv": 'Swedish',
       "fr": 'French',
       "de": 'German',
       "es": 'Spanish',
@@ -148,6 +140,7 @@ export class AppComponent {
           translatedWord: translation,
           showYouglish: this.showYouglish,
           showGiphy: this.showGiphy,
+          languageOutput: this.getNameLang(this.outputVoice?.lang),
           ...this.getSelectedLanguages()
         },
       });
@@ -160,6 +153,17 @@ export class AppComponent {
 interface TranslationAndOriginal {
   word: string;
   translatedWord: string;
+}
+
+
+export interface PopupData {
+  word: string;
+  translatedWord: string;
+  showYouglish: boolean;
+  showGiphy: boolean;
+  source: string;
+  target: string;
+  languageOutput: string;
 }
 
 @Component({
@@ -175,7 +179,7 @@ export class TranslationPopup {
   gif: any;
   constructor(
     public translationPopupRef: MatDialogRef<TranslationPopup>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    @Inject(MAT_DIALOG_DATA) public data: PopupData,
     public speechService: SpeechService,
     public translateService: TranslateService,
     public giphyService: GiphyService
@@ -198,6 +202,10 @@ export class TranslationPopup {
 
   getSentences() {
     return this.data.translatedWord.split(/\.\s+/).filter((x) => x.length > 0);
+  }
+
+  focus(word: string) {
+    this.speak(word); /// add new popup here
   }
 
   speak(word: string, word2?: string) {

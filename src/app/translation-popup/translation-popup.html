@@ -10,11 +10,11 @@
     </span>
   </p>
     <span *ngFor="let word of translateWord|async; index as i">
-      <button (click)="speak(word.word)"
+      <button (click)="focus(word.word)"
       [matTooltip]="word.translatedWord">{{word.word}}</button>
     </span><br><br>
 </div>
 
 <span *ngIf="data.showYouglish">
-  <a class="fcc-btn" *ngFor="let word of translateWord|async;" target="_blank" [href]="'https://youglish.com/pronounce/' + word.word + '/russian'" [matTooltip]="'Youglish ' + word.word">{{ word.word }}</a></span>
+  <a class="fcc-btn" *ngFor="let word of translateWord|async;" target="_blank" [href]="'https://youglish.com/pronounce/' + word.word + '/' + data.languageOutput" [matTooltip]="'Youglish ' + word.word">{{ word.word }}</a></span>
 </div>
