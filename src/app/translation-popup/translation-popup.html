@@ -5,12 +5,13 @@
   <p>
   <img *ngIf="data.showGiphy" [src]="gif | async"></p>
   <p *ngIf="hasSentence">
-    <span *ngFor="let sentence of getSentences(); index as i">
-      <button (click)="speak(sentence)">{{sentence}}</button>
+    <span *ngFor="let sentence of translateSentence|async; index as i">
+      <button (click)="speak(sentence.sentence)"
+       [matTooltip]="sentence.translatedSentence">{{sentence.sentence}}</button>
     </span>
   </p>
     <span *ngFor="let word of translateWord|async; index as i">
-      <button (click)="focus(word.word)"
+      <button (click)="speak(word.word)"
       [matTooltip]="word.translatedWord">{{word.word}}</button>
     </span><br><br>
 </div>

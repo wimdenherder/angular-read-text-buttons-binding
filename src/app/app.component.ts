@@ -35,7 +35,9 @@ export class AppComponent {
   public showYouglish: boolean = false;
   public showGiphy: boolean = false;
   public queryField: FormControl = new FormControl();
-  private _regExpEndOfSentence = /\?+|!+|\.+ /;
+  public readEveryOptions: string[] = ['sentence','word'];
+  public readEvery: string = 'sentence';
+  private _regExpReadEvery: {[key: string]:  RegExp} = {'sentence': /\?+|!+|\.+ /, 'word': / +/};
 
   // I initialize the app component.
   constructor(
@@ -66,11 +68,13 @@ export class AppComponent {
     });
 
     this.queryField.valueChanges.pipe(
-      debounceTime(400),
+      debounceTime(500),
       distinctUntilChanged(),
       switchMap((text: string): Observable<any[]> =>
-        forkJoin(text.split(this._regExpEndOfSentence).map(sentence =>
-          this.translateService.translate({q: sentence, ...this.getSelectedLanguages()}))
+        forkJoin(text.split(this._regExpReadEvery[this.readEvery]).map(sentence =>
+          this.translateService.translate({
+            q: sentence,
+            ...this.getSelectedLanguages()}))
         )
       ),
     ).subscribe(response => {
@@ -115,7 +119,7 @@ export class AppComponent {
   public getSelectedLanguages = () => ({ source: this.inputVoice?.lang, target: this.outputVoice?.lang})
 
   public getSentences() {
-    return this.text.split(this._regExpEndOfSentence).filter((x) => x.length > 0);
+    return this.text.split(this._regExpReadEvery['sentence']).filter((x) => x.length > 0);
   }
 
   public getWords() {
@@ -149,6 +153,11 @@ export class AppComponent {
 }
 
 
+
+interface TranslationSentenceAndOriginal {
+  sentence: string;
+  translatedSentence: string;
+}
 
 interface TranslationAndOriginal {
   word: string;
@@ -221,6 +230,22 @@ export class TranslationPopup {
               {
                 word,
                 translatedWord: translatedText
+              }
+            )
+          )
+      )}
+    )
+  )
+
+  translateSentence = forkJoin(
+    this.getSentences().map((sentence:string) =>{
+      const options = {q: sentence, source: this.data.target, target: this.data.source};
+      return this.translateService.translate(options).pipe(
+        map(
+          (translatedSentence:string): TranslationSentenceAndOriginal => (
+              {
+                sentence,
+                translatedSentence
               }
             )
           )

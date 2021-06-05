@@ -70,6 +70,25 @@
 </div>
 
 <div class="form-field">
+	<label for="rate-control" class="form-field__label">
+		Read:
+	</label>
+	<div class="form-field__content">
+		<select
+			id="rate-control"
+			name="rate"
+			[(ngModel)]="readEvery"
+			class="form-field__control">
+			<option
+				*ngFor="let every of readEveryOptions"
+				[ngValue]="every">
+				{{ every }}
+			</option>
+		</select>
+	</div>
+</div>
+
+<div class="form-field">
 	<label for="text-control" class="form-field__label">
 		Text:
 	</label>
