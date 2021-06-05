@@ -1,37 +1,48 @@
-<!-- <div class="form-field">
-  <label for="voice-control" class="form-field__label">
-		Speak now:
-	</label>
-  <div class="form-field__content">
-  <input [formControl]="queryField" type="text" id="keyword" placeholder="Type English, hear russian" size="50" autofocus/>
-</div>
-</div> -->
-
 <div class="form-field">
 	<label for="voice-control" class="form-field__label">
-		Voice:
+		Input:
 	</label>
 	<div class="form-field__content">
 		<select
 			id="voice-control"
 			name="voice"
-			[(ngModel)]="selectedVoice"
+			[(ngModel)]="inputVoice"
 			class="form-field__control">
 			<option value="">- Select a voice -</option>
 			<option
 				*ngFor="let voice of voices"
 				[ngValue]="voice">
-				{{ voice.name }}
+				{{ getNameLang(voice.lang) || voice.lang }}: {{ voice.name }}
 
 				<ng-template [ngIf]="recommendedVoices[ voice.name ]">
 					&larr; Recommended
 				</ng-template>
 			</option>
 		</select>
+	</div>
+</div>
 
-		<div class="form-field__subnote">
-			( &larr; ) indicates a voice that Ben could understand clearly.
-		</div>
+<div class="form-field">
+	<label for="voice-control" class="form-field__label">
+		Output:
+	</label>
+	<div class="form-field__content">
+		<select
+			id="voice-control"
+			name="voice"
+			[(ngModel)]="outputVoice"
+			class="form-field__control">
+			<option value="">- Select a voice -</option>
+			<option
+				*ngFor="let voice of voices"
+				[ngValue]="voice">
+				{{ getNameLang(voice.lang) || voice.lang }}: {{ voice.name }}
+
+				<ng-template [ngIf]="recommendedVoices[ voice.name ]">
+					&larr; Recommended
+				</ng-template>
+			</option>
+		</select>
 	</div>
 </div>
 
@@ -68,7 +79,6 @@
 			id="text-control"
 			name="text"
 			[(ngModel)]="text"
-			(keydown.Meta.Enter)="speak()"
 			class="form-field__control"
 		></textarea>
 

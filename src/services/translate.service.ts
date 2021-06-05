@@ -7,9 +7,9 @@ import { key as translateKey } from '/credentials/apiKeyTranslateWimcoding'; // 
 
 export class GoogleObj {
   q: string = '';
-  readonly source: string = 'en';
-  readonly target: string = 'es';
-  readonly format?: string = 'text';
+  source?: string = 'nl';
+  target?: string = 'ru';
+  format?: string = 'text';
 
   constructor() {}
 }
@@ -20,6 +20,9 @@ export class TranslateService {
   constructor(private _http: HttpClient) {}
 
   translate(obj: GoogleObj) {
+    console.log('translate ', obj);
+    obj.source = obj.source?.split('-')[0];
+    obj.target = obj.target?.split('-')[0];
     return this._http.post(url + translateKey, obj).pipe(
       map((d: any) => d.data.translations[0].translatedText)
     )

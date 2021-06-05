@@ -63,7 +63,7 @@ export class SpeechService {
 
   // I synthesize speech from the current text for the currently-selected voice.
   public speak(text?: string, rate?: number, voiceName?: string): void {
-    if (!this.selectedVoice || !this.text) {
+    if (!this.selectedVoice || !text) {
       return;
     }
 
