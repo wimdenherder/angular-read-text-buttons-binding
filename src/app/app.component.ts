@@ -145,6 +145,8 @@ export class AppComponent {
           showYouglish: this.showYouglish,
           showGiphy: this.showGiphy,
           languageOutput: this.getNameLang(this.outputVoice?.lang),
+          selectedRate: this.selectedRate,
+          outputVoiceName: this.outputVoice?.name,
           ...this.getSelectedLanguages()
         },
       });
@@ -173,6 +175,8 @@ export interface PopupData {
   source: string;
   target: string;
   languageOutput: string;
+  selectedRate: number;
+  outputVoiceName: string;
 }
 
 @Component({
@@ -218,7 +222,8 @@ export class TranslationPopup {
   }
 
   speak(word: string, word2?: string) {
-    this.speechService.speak(word, 1, 'Google русский');
+    // this.speechService.speak(word, 1, 'Google русский');
+    this.speechService.speak(word, this.data.selectedRate, this.data.outputVoiceName);
   }
 
   translateWord = forkJoin(

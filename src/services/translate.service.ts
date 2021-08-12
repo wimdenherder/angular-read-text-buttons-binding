@@ -2,7 +2,6 @@ declare let underscore: any;
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
-import { unescape } from "underscore";
 
 const url = 'https://translation.googleapis.com/language/translate/v2?key=';
 import { key as translateKey } from '/credentials/apiKeyTranslateWimcoding'; // replace this with your API Key
@@ -26,8 +25,12 @@ export class TranslateService {
     obj.source = obj.source?.split('-')[0];
     obj.target = obj.target?.split('-')[0];
     return this._http.post(url + translateKey, obj).pipe(
-      map((d: any) => unescape(d.data.translations[0].translatedText))
+      map((d: any) => d.data.translations[0].translatedText.replace(/&#39;/g, "'"))
     )
+  }
+
+  replaceSpecialChars(string: string): any {
+    return string.replace(/&#39;/g, "'");
   }
 }
 
