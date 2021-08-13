@@ -1,3 +1,9 @@
+<div>
+  <span *ngFor="let language of availableLanguages; index as i">
+  <button class="langButton" (click)="setActiveLanguage(language.langCode)">{{language.name}}</button>
+</span>
+</div>
+
 <div class="form-field">
 	<label for="voice-control" class="form-field__label">
 		Input:
@@ -24,17 +30,18 @@
 
 <div class="form-field">
 	<label for="voice-control" class="form-field__label">
-		Output:
+		Output Voice:
 	</label>
 	<div class="form-field__content">
 		<select
 			id="voice-control"
 			name="voice"
 			[(ngModel)]="outputVoice"
-			class="form-field__control">
+			class="form-field__control"
+      (change)="outputVoiceChanged()">
 			<option value="">- Select a voice -</option>
 			<option
-				*ngFor="let voice of voices"
+				*ngFor="let voice of activeVoices"
 				[ngValue]="voice">
 				{{ getNameLang(voice.lang) || voice.lang }}: {{ voice.name }}
 
@@ -100,10 +107,6 @@
 			[(ngModel)]="text"
 			class="form-field__control"
 		></textarea>
-
-		<div class="form-field__subnote">
-			You can hit <code>CMD+Enter</code> to speak text.
-		</div>
 	</div>
 </div>
 
@@ -126,8 +129,6 @@
     </div>
 	</div>
 </div>
-
-
 
 <br>Words:<br>
 <span *ngFor="let word of getWords(); index as i">

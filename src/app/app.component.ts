@@ -8,9 +8,10 @@ import {
 } from '@angular/material/dialog';
 import { TranslateService } from '../services/translate.service';
 import { GiphyService } from 'src/services/giphy.service';
-import { forkJoin, Observable } from 'rxjs';
-import { debounceTime, distinctUntilChanged, distinctUntilKeyChanged, map, switchMap } from 'rxjs/operators';
+import { forkJoin, Observable, BehaviorSubject, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, distinctUntilKeyChanged, map, switchMap, share, first } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
+import { uniqueArrayFilterOnKey, sortAlphabeticallyOnKey } from './helper/array';
 
 // ----------------------------------------------------------------------------------- //
 // ----------------------------------------------------------------------------------- //
@@ -30,14 +31,17 @@ export class AppComponent {
   public selectedRate: number;
   public inputVoice: SpeechSynthesisVoice | null;
   public outputVoice: SpeechSynthesisVoice | null;
-  public text: string;
+  public text: string = `This is cool`;
   public voices: SpeechSynthesisVoice[];
+  public activeVoices: SpeechSynthesisVoice[] = [];
   public showYouglish: boolean = false;
   public showGiphy: boolean = false;
   public queryField: FormControl = new FormControl();
   public readEveryOptions: string[] = ['sentence','word'];
   public readEvery: string = 'sentence';
   private _regExpReadEvery: {[key: string]:  RegExp} = {'sentence': /\?+|!+|\.+ /, 'word': / +/};
+  public availableLanguages: {name: string, langCode: string}[] = [];
+  public activeLanguageOutput = new BehaviorSubject<string>('ru');
 
   // I initialize the app component.
   constructor(
@@ -51,8 +55,6 @@ export class AppComponent {
     this.outputVoice = null;
     this.selectedRate = 1;
     // Dirty Dancing for the win!
-    this.text =
-      `This is our hope. This is the faith that I go back to the South with. With this faith, we will be able to hew out of the mountain of despair a stone of hope. With this faith we will be able to transform the jangling discords of our nation into a beautiful symphony of brotherhood. With this faith we will be able to work together, to pray together, to struggle together, to go to jail together, to stand up for freedom together, knowing that we will be free one day.`;
 
     this.recommendedVoices = this.speechService.recommendedVoices;
     this.inputVoice = this.voices[0];
@@ -63,8 +65,10 @@ export class AppComponent {
   public ngOnInit(): void {
     speechSynthesis.addEventListener('voiceschanged', () => {
       this.voices = speechSynthesis.getVoices().sort((voice1, voice2) => voice2.lang > voice1.lang ? -1 : 1);
+      this.availableLanguages = uniqueArrayFilterOnKey(this.voices.map(voice => ({name: this.getNameLang(voice.lang.split("-")[0]), langCode: voice.lang.split("-")[0]})),'langCode').sort(sortAlphabeticallyOnKey('name'));
+      // defaults
+      this.setActiveLanguage('ru');
       this.inputVoice = this.voices.find(voice => voice.lang === "nl-NL") || null;
-      this.outputVoice = this.voices.find(voice => voice.lang === "ru-RU") || null;
     });
 
     this.queryField.valueChanges.pipe(
@@ -79,6 +83,10 @@ export class AppComponent {
       ),
     ).subscribe(response => {
       this.speechService.speak(response.slice(-1)[0] || response.slice(-2)[0], this.selectedRate, this.outputVoice?.name);
+    });
+
+    this.activeLanguageOutput.subscribe(langCode => {
+      this.activeVoices = this.voices.filter(voice => voice.lang.split('-')[0] === langCode);
     });
   }
 
@@ -114,6 +122,19 @@ export class AppComponent {
       'ru': 'Russian'
     }
     return lib[langCode.split('-')[0]]
+  }
+
+  public setActiveLanguage(langCode: string) {
+    this.activeLanguageOutput.next(langCode);
+    this.outputVoice = this.voices.find(voice => voice.lang.split('-')[0] === langCode) || null;
+    this.outputVoiceChanged();
+  }
+
+  public outputVoiceChanged() {
+    this.translateService.translate({
+      q: this.text,
+      ...this.getSelectedLanguages()}).subscribe(translatedText =>
+    this.speechService.speak(translatedText, this.selectedRate, this.outputVoice?.name));
   }
 
   public getSelectedLanguages = () => ({ source: this.inputVoice?.lang, target: this.outputVoice?.lang})
