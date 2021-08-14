@@ -25,6 +25,7 @@ export class TranslateService {
     console.log('translate ', obj);
     obj.source = obj.source?.split('-')[0];
     obj.target = obj.target?.split('-')[0];
+    obj.target = obj.target === 'it' ? 'la' : obj.target;
     if(obj.source === obj.target)
       return of(obj.q);
     return this._http.post(url + translateKey, obj).pipe(

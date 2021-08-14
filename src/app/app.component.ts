@@ -11,7 +11,8 @@ import { GiphyService } from 'src/services/giphy.service';
 import { forkJoin, Observable, BehaviorSubject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, distinctUntilKeyChanged, map, switchMap, share, first } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
-import { uniqueArrayFilterOnKey, sortAlphabeticallyOnKey } from './helper/array';
+import { uniqueArrayFilterOnKey, sortAlphabeticallyOnKey, uniqueArrayFilterOnLanguageWithoutDialect, sortAlphabeticallyOnLanguageWithoutDialect} from './helper/array';
+import { getNameLang } from './lib/languageCodes';
 
 // ----------------------------------------------------------------------------------- //
 // ----------------------------------------------------------------------------------- //
@@ -31,17 +32,20 @@ export class AppComponent {
   public selectedRate: number;
   public inputVoice: SpeechSynthesisVoice | null;
   public outputVoice: SpeechSynthesisVoice | null;
-  public text: string = `This is cool`;
+  public text: string = ``;
   public voices: SpeechSynthesisVoice[];
   public activeVoices: SpeechSynthesisVoice[] = [];
-  public showYouglish: boolean = false;
-  public showGiphy: boolean = false;
+  public showYouglish: boolean = true;
+  public showGiphy: boolean = true;
   public queryField: FormControl = new FormControl();
   public readEveryOptions: string[] = ['sentence','word'];
   public readEvery: string = 'sentence';
   private _regExpReadEvery: {[key: string]:  RegExp} = {'sentence': /\?+|!+|\.+ /, 'word': / +/};
   public availableLanguages: {name: string, langCode: string}[] = [];
   public activeLanguageOutput = new BehaviorSubject<string>('ru');
+  public voicesUniqueLanguages: SpeechSynthesisVoice[] = [];
+  public getNameLang = getNameLang;
+  public translatedText: any;
 
   // I initialize the app component.
   constructor(
@@ -65,11 +69,14 @@ export class AppComponent {
   public ngOnInit(): void {
     speechSynthesis.addEventListener('voiceschanged', () => {
       this.voices = speechSynthesis.getVoices().sort((voice1, voice2) => voice2.lang > voice1.lang ? -1 : 1);
+      console.log(this.voices);
+      this.voicesUniqueLanguages = uniqueArrayFilterOnLanguageWithoutDialect(this.voices).sort(sortAlphabeticallyOnLanguageWithoutDialect);
       this.availableLanguages = uniqueArrayFilterOnKey(this.voices.map(voice => ({name: this.getNameLang(voice.lang.split("-")[0]), langCode: voice.lang.split("-")[0]})),'langCode').sort(sortAlphabeticallyOnKey('name'));
       // defaults
       this.setActiveLanguage('ru');
-      this.inputVoice = this.voices.find(voice => voice.lang === "nl-NL") || null;
+      this.setInputLanguage('nl');
     });
+
 
     this.queryField.valueChanges.pipe(
       debounceTime(500),
@@ -83,6 +90,7 @@ export class AppComponent {
       ),
     ).subscribe(response => {
       this.speechService.speak(response.slice(-1)[0] || response.slice(-2)[0], this.selectedRate, this.outputVoice?.name);
+      this.updateTranslatedText();
     });
 
     this.activeLanguageOutput.subscribe(langCode => {
@@ -90,51 +98,27 @@ export class AppComponent {
     });
   }
 
-  public getNameLang(langCode: string | undefined) {
-    if(!langCode) return langCode;
-    const lib: any = {
-      'nl': 'Dutch',
-      'en': 'English',
-      "it": 'Italian',
-      "sv": 'Swedish',
-      "fr": 'French',
-      "de": 'German',
-      "es": 'Spanish',
-      "ro": 'Romanian',
-      "ja": 'Japanese',
-      'he': 'Hebrew',
-      'id': 'Indonesian',
-      'pt': 'Portugese',
-      'th': 'Thai',
-      'sk': 'Slovak',
-      'hi': 'Hindi',
-      'ar': 'Arabic',
-      'hu': 'Hungarian',
-      'zh': 'Chinese',
-      'el': 'Greek',
-      'nb': 'Norway',
-      'da': 'Danish',
-      'fi': 'Finnish',
-      'tr': 'Turkish',
-      'ko': 'Korean',
-      'pl': 'Polish',
-      'cs': 'Czech',
-      'ru': 'Russian'
-    }
-    return lib[langCode.split('-')[0]]
-  }
-
   public setActiveLanguage(langCode: string) {
     this.activeLanguageOutput.next(langCode);
     this.outputVoice = this.voices.find(voice => voice.lang.split('-')[0] === langCode) || null;
-    this.outputVoiceChanged();
+    this.speakCurrentText();
+    this.updateTranslatedText();
   }
 
-  public outputVoiceChanged() {
+  public setInputLanguage(langCode: string) {
+    this.inputVoice = this.voices.find(voice => voice.lang.split('-')[0] === langCode) || null;
+  }
+
+  public speakCurrentText() {
     this.translateService.translate({
       q: this.text,
       ...this.getSelectedLanguages()}).subscribe(translatedText =>
     this.speechService.speak(translatedText, this.selectedRate, this.outputVoice?.name));
+  }
+
+  public getSpeechSynthesisVoiceWithLangOfVoice(langName: string) {
+    console.log("finding langName", langName);
+    return this.voices.find(voice => voice.lang === langName)
   }
 
   public getSelectedLanguages = () => ({ source: this.inputVoice?.lang, target: this.outputVoice?.lang})
@@ -145,6 +129,23 @@ export class AppComponent {
 
   public getWords() {
     return this.text.split(/\s+/).filter((x) => x.length > 0);
+  }
+
+  // triggered by change in input text field
+  public inputTextIsChanged(event: any) {
+    if(/ |\n|\s\|\.|\!|\?/.test(event.charAt(event.length-1))) {
+      this.updateTranslatedText();
+    }
+  }
+
+  public updateTranslatedText() {
+    this.translatedText = this.getTranslatedText();
+  }
+
+  public getTranslatedText() {
+    return this.translatedText = this.translateService.translate({
+    q: this.text,
+    ...this.getSelectedLanguages()})
   }
 
   public openTranslationDialog(word: string): void {
