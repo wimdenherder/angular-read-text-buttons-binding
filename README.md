@@ -46,11 +46,11 @@ export const environment = {
 ```
 export const whitelistedEmails = [ ... emails here seperated by comma ... ]
 ```  
-NOTE: only these whitelisted emails will get access to your app!
-11. npm install
+NOTE: only these whitelisted emails will get access to your app!  
+11. npm install  
 12. npm start
 
-# Using an existing project
+# Get firestore credentials from an existing project
 4. go to firebase
 go to (and login): https://console.firebase.google.com/u/0/project/_/overview
 5. select the project
