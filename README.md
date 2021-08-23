@@ -7,15 +7,15 @@ It translates it to Russian and plays it with text to speech!
 
 # Installation
 1. clone the repo/download
-2. replace apikey for translation with yours (get it at console.cloud.google.com)
-3. Creating a firestore database (at firebase)
-4. go to firebase
-go to (and login): https://console.firebase.google.com/u/0/project/_/overview
-5. add new project & continue (to use existing project see at the bottom)
-6. click on web app symbol
+2. create and replace apiKeyTranslateWimcoding (get it at console.cloud.google.com)
+create and replace [giphyKey] (https://support.giphy.com/hc/en-us/articles/360020283431-Request-A-GIPHY-API-Key)
+3. creating a firestore database (at firebase)  
+go to firebase (and login): https://console.firebase.google.com/u/0/project/_/overview
+4. add new project & continue (to use existing project see at the bottom)
+5. click on web app symbol
 ![alt text](readme-img-firebase.png)
-7. register app
-8. copy this
+6. register app
+7. copy this
 ```
 var firebaseConfig = {
     apiKey: "*********",
@@ -27,7 +27,7 @@ var firebaseConfig = {
     measurementId: "*********"
   };
 ```
-9. create the file src/environments/environment.ts and copy the credentials to here
+8. create the file src/environments/environment.ts and copy the credentials to here
 ```
 export const environment = {
   production: true,
@@ -42,13 +42,13 @@ export const environment = {
   }
 }
 ```  
-10. export also whitelisted emails in src/environments/environment.ts   
+9. export also whitelisted emails in src/environments/environment.ts   
 ```
 export const whitelistedEmails = [ ... emails here seperated by comma ... ]
 ```  
 NOTE: only these whitelisted emails will get access to your app!  
-11. npm install  
-12. npm start
+10. npm install  
+11. npm start
 
 # Get firestore credentials from an existing project
 4. go to firebase
