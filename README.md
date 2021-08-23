@@ -7,8 +7,8 @@ It translates it to Russian and plays it with text to speech!
 
 # Installation
 1. clone the repo/download
-2. create and replace apiKeyTranslateWimcoding (get it at console.cloud.google.com)
-create and replace [giphyKey] (https://support.giphy.com/hc/en-us/articles/360020283431-Request-A-GIPHY-API-Key)
+2. create and replace apiKeyTranslateWimcoding (get it [here](console.cloud.google.com))
+create and replace [giphyKey](https://support.giphy.com/hc/en-us/articles/360020283431-Request-A-GIPHY-API-Key)
 3. creating a firestore database (at firebase)  
 go to firebase (and login): https://console.firebase.google.com/u/0/project/_/overview
 4. add new project & continue (to use existing project see at the bottom)
