@@ -11,13 +11,15 @@ It translates it to Russian and plays it with text to speech!
 3. create database at console.firebase.google.com
 4. download credentials from console.firebase.google
 5. copy them to src/environments/environment.ts (create this file if it doesn't exist)
-```export const environment = {
+```
+export const environment = {
   production: true,
   firebase: { ... credentials here ... }
 }
 ```  
 6. export also whitelisted emails like this in src/environments/environment.ts   
-```export const whitelistedEmails = [ ... emails here seperated by comma ... ]
+```
+export const whitelistedEmails = [ ... emails here seperated by comma ... ]
 ```  
 7. npm install
 8. npm start
