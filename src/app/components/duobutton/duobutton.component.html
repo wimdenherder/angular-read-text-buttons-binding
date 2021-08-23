@@ -1,0 +1,179 @@
+
+<p>
+  <mat-toolbar color="primary">
+    <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <span>DuoButton</span>
+    <span class="example-spacer"></span>
+    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon">
+      <mat-icon>favorite</mat-icon>
+    </button>
+    <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
+      <mat-icon>share</mat-icon>
+    </button>
+    <div class="row" *ngIf="authService.userData as user">
+      <img class="align-self-start mr-5 img-thumbnail rounded-circle" src="{{(user.photoURL) ? user.photoURL : 'https://via.placeholder.com/150'}}"
+                  alt="{{user.displayName}}" style="width:50px;height:50px;">
+                  {{ user.email }}
+                  <button class="nav-link" (click)="authService.SignOut()">
+                    <i class="fas fa-sign-out-alt"></i>Log out
+                  </button>
+    </div>
+  </mat-toolbar>
+</p>
+
+<!-- {{ getSavedTextsFromUser$() | async}} -->
+
+<div class="form-field">
+	<label for="voice-control" class="form-field__label">
+		Input:
+	</label>
+	<div class="form-field__content">
+		<select
+			id="voice-control"
+			name="voice"
+			[(ngModel)]="inputVoice"
+			class="form-field__control">
+			<option value="">- Select a voice -</option>
+			<option
+				*ngFor="let voice of voicesUniqueLanguages"
+				[ngValue]="voice">
+				{{ getNameLang(voice.lang) || voice.lang }}
+			</option>
+		</select>
+	</div>
+</div>
+<div class="form-field">
+	<label for="voice-control" class="form-field__label">
+		Output:
+	</label>
+	<div class="form-field__content">
+  <span *ngFor="let language of availableLanguages; index as i">
+    <button class="langButton" (click)="setActiveLanguage(language.langCode)">{{language.name}}</button>
+  </span>
+</div>
+</div>
+
+<div class="form-field">
+	<label for="voice-control" class="form-field__label">
+		Output Voice:
+	</label>
+	<div class="form-field__content">
+		<select
+			id="voice-control"
+			name="voice"
+			[(ngModel)]="outputVoice"
+			class="form-field__control"
+      (change)="speakCurrentText()">
+			<option value="">- Select a voice -</option>
+			<option
+				*ngFor="let voice of activeVoices"
+				[ngValue]="voice">
+				{{ getNameLang(voice.lang) || voice.lang }}: {{ voice.name }}
+
+				<ng-template [ngIf]="recommendedVoices[ voice.name ]">
+					&larr; Recommended
+				</ng-template>
+			</option>
+		</select>
+	</div>
+</div>
+
+<div class="form-field">
+	<label for="rate-control" class="form-field__label">
+		Speed:
+	</label>
+	<div class="form-field__content">
+		<select
+			id="rate-control"
+			name="rate"
+			[(ngModel)]="selectedRate"
+			class="form-field__control">
+			<option
+				*ngFor="let rate of rates"
+				[ngValue]="rate">
+				{{ rate }}
+
+				<ng-template [ngIf]="( rate === 1 )">
+					( Normal )
+				</ng-template>
+			</option>
+		</select>
+	</div>
+</div>
+
+<div class="form-field">
+	<label for="rate-control" class="form-field__label">
+		Read:
+	</label>
+	<div class="form-field__content">
+		<select
+			id="rate-control"
+			name="rate"
+			[(ngModel)]="readEvery"
+			class="form-field__control">
+			<option
+				*ngFor="let every of readEveryOptions"
+				[ngValue]="every">
+				{{ every }}
+			</option>
+		</select>
+	</div>
+</div>
+
+<div class="form-field">
+	<label for="text-control" class="form-field__label">
+		Text:
+	</label>
+	<div class="form-field__content">
+		<textarea
+    [formControl]="queryField"
+			id="text-control"
+			name="text"
+			[(ngModel)]="text"
+			class="form-field__control"
+      (ngModelChange)="inputTextIsChanged($event)"
+		></textarea><br>
+    <button (click)="dialogSaveToDb()">Sla op</button>
+	</div>
+</div>
+
+<div class="form-field">
+	<label for="text-control" class="form-field__label">
+		Translation:
+	</label>
+	<div class="form-field__content" style="font-size:30px;">
+    {{translatedText|async}}
+    <br><br><button (click)="speakCurrentText()">Play</button>
+	</div>
+</div>
+
+<div class="form-field">
+	<label for="text-control" class="form-field__label">
+		Extra:
+	</label>
+	<div class="form-field__content">
+		<div>
+      <input type="checkbox" id="giphy" name="giphy"
+             checked [(ngModel)]="showGiphy"
+             [ngModelOptions]="{standalone: true}">
+      <label for="scales">Giphy</label>
+    </div>
+    <div>
+      <input type="checkbox" id="youglish" name="youglish"
+             checked [(ngModel)]="showYouglish"
+             [ngModelOptions]="{standalone: true}">
+      <label for="scales">Youglish</label>
+    </div>
+	</div>
+</div>
+
+<br>Words:<br>
+<span *ngFor="let word of getWords(); index as i">
+  <button class="form-actions__button form-actions__button--secondary" (click)="openTranslationDialog(word)">{{word}}</button>
+</span><br><br>
+Sentences:<br>
+<span *ngFor="let sentence of getSentences(); index as i">
+  <button class="form-actions__button" (click)="openTranslationDialog(sentence)">{{sentence}}</button><br>
+</span>

@@ -12,7 +12,8 @@
   </p>
     <span *ngFor="let word of translateWord|async; index as i">
       <button (click)="speak(word.word)"
-      [matTooltip]="word.translatedWord">{{word.word}}</button>
+      [matTooltip]="word.translatedWord"
+      >{{word.word}}</button>
     </span><br><br>
 </div>
 
