@@ -14,8 +14,10 @@ It translates it to Russian and plays it with text to speech!
 ```export const environment = {
   production: true,
   firebase: { ... credentials here ... }
-}```  
+}
+```  
 6. export also whitelisted emails like this in src/environments/environment.ts   
-```export const whitelistedEmails = [ ... emails here seperated by comma ... ]```  
+```export const whitelistedEmails = [ ... emails here seperated by comma ... ]
+```  
 7. npm install
 8. npm start
